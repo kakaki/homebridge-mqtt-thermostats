@@ -1,0 +1,32 @@
+{
+  "name": "homebridge-mqtt-thermostats",
+  "version": "0.0.1",
+  "description": "a homebridge(https://github.com/nfarina/homebridge) plugin for custom thermostat sensors over mqtt",
+  "keywords": [
+    "homebridge-plugin",
+    "MQTT",
+    "homekit",
+    "Siri",
+    "IoT"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/kakaki/homebridge-mqtt-thermostats",
+  "author": "Kakaki",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kakaki/homebridge-mqtt-thermostats"
+  },
+  "bugs": {
+    "url": "http://github.com/kakaki/homebridge-mqtt-thermostats/issues"
+  },
+  "engines": {
+    "node": ">=8.9.0",
+    "homebridge": ">=0.4.1"
+  },
+  "dependencies": {
+  "mqtt": "^2.9.0",
+  "node-persist": "^2.1.0",
+  "moment": "*",
+  "fakegato-history": "^0.5.2"
+  }
+}
