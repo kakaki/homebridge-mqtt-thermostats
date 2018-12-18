@@ -129,12 +129,29 @@ module.exports = (homebridge) => {
 			if (rheat_state!=lheat_state) {	
 				console.log("change heat "+lheat_state+" "+rheat_state+" topic "+this.heat.topic_set);	
 				this.mqttPublish(this.heat.topic_set, lheat_state ? this.heat.on_value : this.heat.off_value);
+								
+				if (lheat_state) {
+					//start heating all that are under target temp+delta stop				
+					for (var i in this.thermostats) {
+					  var accessory = this.accessories[this.thermostats[i].name];
+								
+					  if (accessory.context.current_temp < accessory.context.target_temp+accessory.context.temp_delta_stop-0.1) {
+						console.log("check heat start "+accessory.context.name+" to :"+ accessory.context.target_temp);
+					
+						var therm_service = accessory.getService(Service.Thermostat);					
+						therm_service.getCharacteristic(Characteristic.CurrentHeatingCoolingState).setValue(Characteristic.CurrentHeatingCoolingState.HEAT, undefined, 'checkHeatValue');
+						if (accessory.context.setOn!="") {
+							this.mqttPublish(accessory.context.setOn, accessory.context.onValue);
+						}			
+					  }
+					}
 				
-//				fs.readFile(homebridge.user.storagePath()+'thermo_heat.json', function (err, data) {
-//					var json = JSON.parse(data)
-//				    json.push({time: moment().unix(), heat: lheat_state})
-//				    fs.writeFile(homebridge.user.storagePath()+'thermo_heat.json', JSON.stringify(json))
-//				})
+	//				fs.readFile(homebridge.user.storagePath()+'thermo_heat.json', function (err, data) {
+	//					var json = JSON.parse(data)
+	//				    json.push({time: moment().unix(), heat: lheat_state})
+	//				    fs.writeFile(homebridge.user.storagePath()+'thermo_heat.json', JSON.stringify(json))
+	//				})
+				}
 			}
 		}
 	}
@@ -205,6 +222,7 @@ module.exports = (homebridge) => {
 		cache.name = data.name;
 		this.displayName = data.name;
 	
+	    cache.setOn = data.topics.setOn;
 		cache.onValue = data.onValue || 1;
 		cache.offValue = data.offValue || 0;
 		
@@ -313,7 +331,9 @@ module.exports = (homebridge) => {
 				console.log('set CurrentHeatingCoolingState:'+ value);
 				cache.current_heat_state = value;
 			}
-			that.checkHeating();
+			if (context !== 'checkHeatValue') {
+				that.checkHeating();
+			}
 			callback();
 			});		
 
@@ -356,6 +376,11 @@ module.exports = (homebridge) => {
 					}
 				  }
 			}
+			
+			if (data.topics.setTargetTemperature!="") {				
+				that.mqttPublish(data.topics.setTargetTemperature, value);
+			}
+					
 			callback();
 			});
 		
